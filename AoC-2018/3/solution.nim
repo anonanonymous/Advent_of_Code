@@ -1,12 +1,6 @@
 import re, sequtils, strutils
 
-type
-    Matrix[W, H: static[int]] = array[W, array[H, char]]
-
-proc strs_to_ints(input: seq[string]): seq[int] =
-    return map(input, proc(x: string): int = parseInt(x))
-
-proc part_two(input: seq[seq[int]], fabric: Matrix): int =
+proc part_two[I](input: seq[seq[int]], fabric: array[I, array[I, char]]): int =
     var found: bool
     for claim in input:
         found = false
@@ -17,21 +11,22 @@ proc part_two(input: seq[seq[int]], fabric: Matrix): int =
         if found == false:
             return claim[0]
 
-proc part_one(input: seq[seq[int]]): int =
-    var fabric: Matrix[1000, 1000]
+proc part_one(input: seq[seq[int]]): tuple[res: int, graph: array[1000, array[1000, char]]] =
+    var fabric: array[1000, array[1000, char]]
     for claim in input:
         for i in 0..<claim[4]:
             for j in 0..<claim[3]:
-                if fabric[i + claim[2]][j + claim[1]] == '\0':
+                case fabric[i + claim[2]][j + claim[1]]
+                of '\0':
                     fabric[i + claim[2]][j + claim[1]] = '#'
-                else:
+                of '#':
                     fabric[i + claim[2]][j + claim[1]] = 'X'
-    for thread in fabric:
-        result += count(thread, 'X')
-    echo result
-    echo part_two(input, fabric)
+                    result[0] += 1
+                else: discard
+    return (result[0], fabric)
 
-
-let f = split(strip(readFile("input.txt")), "\n")
-let claims = map(f, proc(x: string): seq[int] = strs_to_ints(findall(x, re"\d+")))
-discard part_one(claims)
+let claims = map(split(strip(readFile("input.txt")), "\n"),
+                 proc(x: string): seq[int] =  map(findall(x, re"\d+"),
+                 proc(x: string): int = parseInt(x)))
+var res = part_one(claims)
+echo res[0], '\n', part_two(claims, res[1])
