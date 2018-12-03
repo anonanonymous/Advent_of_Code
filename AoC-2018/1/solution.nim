@@ -22,6 +22,6 @@ proc part_two(input: seq[string]): int =
             if numSet.contains(result):
                 return result
 
-var f = split(strip(readFile("input.txt")), "\n")
+let f = split(strip(readFile("input.txt")), "\n")
 echo part_one(f)
 echo part_two(f)

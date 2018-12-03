@@ -7,8 +7,9 @@ proc strs_to_ints(input: seq[string]): seq[int] =
     return map(input, proc(x: string): int = parseInt(x))
 
 proc part_two(input: seq[seq[int]], fabric: Matrix): int =
+    var found: bool
     for claim in input:
-        var found = false
+        found = false
         for i in 0..<claim[4]:
             for j in 0..<claim[3]:
                 if fabric[i + claim[2]][j + claim[1]] == 'X':

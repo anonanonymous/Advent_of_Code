@@ -35,6 +35,6 @@ proc part_two(input: seq[string]): string =
             table.incl(new_item)
     return new_item
 
-var f = split(strip(readFile("input.txt")), "\n")
+let f = split(strip(readFile("input.txt")), "\n")
 echo part_one(f)
 echo part_two(f)
