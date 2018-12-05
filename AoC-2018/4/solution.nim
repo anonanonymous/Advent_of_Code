@@ -1,48 +1,61 @@
-import algorithm, re, sequtils, strutils, tables
+import algorithm, sequtils, strutils, tables
 
-proc solution(input: seq[seq[int]]): tuple[part_1, part_2: int] =
-    var records = initTable[int, CountTable[int]]()
-    var time = initTable[int, int]()
-    var sleep = true
-    var id, offset, max, hold = 0
+proc solution(input: seq[seq[string]]): tuple[part_1, part_2: int] =
+    var time: array[60, seq[int]]
+    var guard_times = initCountTable[int]()
+    var last_awake, current_id, idx, max, hold: int
 
-    for i in input:
-        if i.len == 5 and sleep:
-            offset = if i[3] == 0: i[4] else: 0
-            sleep = false
-        elif i.len == 5:
-            if not records.hasKey(id): records[id] = initCountTable[int]()
-            if not time.hasKey(id): time[id] = i[4] - offset
-            else: time[id] += i[4] - offset
-           
-            for j in offset..<i[4]:
-                if records[id].hasKey(j): records[id][j].inc()
-                else: records[id][j] = 1
-            offset = 0
-            sleep = true
-        else:
-            id = i[i.high]
-            offset = if i[3] == 0: i[4] else: 0
-    for k, v in time:
-        if v > max:
-            max = v
-            id = k
-    hold = records[id].largest()[0] * id
-    offset = 0
+    for i in 0..59:
+        time[i] = newSeq[int]()
 
-    for k, v in records.pairs():
-        if v.largest()[1] > offset:
-            offset = v.largest()[1]
-            max = v.largest()[0]
-            id = k
+    for record in input:
+        if record[2].contains("Guard"):
+            idx = 7
+            current_id = 0
+            while record[2][idx] != ' ':
+                current_id += (ord(record[2][idx]) - ord('0'))
+                if record[2][idx + 1] != ' ': current_id *= 10
+                inc(idx)
+            if record[0] == "00":
+                last_awake = parseInt(record[1])
+            else:
+                last_awake = 0
+        elif record[2].contains("falls"):
+            last_awake = parseInt(record[1]) - 1
+        elif record[2].contains("wakes"):
+            for i in last_awake + 1..<parseInt(record[1]):
+                time[i].add(current_id)
+            last_awake = parseInt(record[1])
 
-    return (hold, max * id)
+    for i in 0..59:
+        for record in time[i]:
+            if guard_times.hasKey(record):
+                inc(guard_times[record])
+            else:
+                guard_times[record] = 1
 
-var input = map(split(strip(readFile("input.txt")), "\n"),
-                 proc(x: string): seq[int] =  map(findall(x, re"\d+"),
-                 proc(x: string): int = parseInt(x)))
+    current_id = guard_times.largest()[0]
+    for i in 0..59:
+        idx = time[i].count(current_id)
+        if max < idx:
+            max = idx
+            last_awake = i
+    hold = current_id * last_awake
+    max = 0
+    var offset = 0
+    for i in 0..59:
+        while offset < time[i].len:
+            idx = time[i].count(time[i][offset])
+            if idx > max:
+                max = idx
+                last_awake = i
+                current_id = time[i][offset]
+            offset += idx
+        offset = 0
+    return ((hold, current_id * last_awake))
 
-for i in countDown(4, 1):
-    sort(input) do (x, y: seq[int]) -> int: cmp(x[i], y[i])
+var input = map(readFile("biginput.txt").strip.splitLines.sorted(cmp),
+                proc(x: string): seq[string] =
+                    @[x[12..13], x[15..16], x[19..x.high]])
 
 echo solution(input)
