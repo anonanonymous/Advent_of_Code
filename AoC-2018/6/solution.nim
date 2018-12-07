@@ -24,12 +24,9 @@ proc part_one(indices: seq[tuple[x, y: int]]): int =
                 if values.count(values[min_index]) == 1:
                     if counter.hasKey(min_index): counter[min_index] = 0
                     inf_set.incl(min_index)
-
             elif not inf_set.contains(min_index):
-                if not counter.hasKey(min_index):
-                    counter[min_index] = 1
-                else:
-                    counter[min_index] += 1
+                counter.inc(min_index)
+
             min_index = 0
     return counter.largest[1]
 
@@ -47,8 +44,8 @@ proc part_two(indices: seq[tuple[x, y: int]], limit: int): int =
 
 let input = map(readFile("input.txt").strip.splitLines,
                 proc(s: string): tuple[x, y:int] =
-                    let tmp = s.split({',', ' '})
-                    (parseInt(tmp[2]), parseInt(tmp[0])))
+                    let tmp = s.split(", ")
+                    (parseInt(tmp[1]), parseInt(tmp[0])))
 
 echo part_one(input)
 echo part_two(input, 10000)
