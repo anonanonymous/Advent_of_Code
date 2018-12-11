@@ -1,16 +1,16 @@
-import strutils, threadpool
+import threadpool
 
 proc helper(input: string, ch: char): int =
     var stack = newSeq[char]()
-
     for i in input:
-        if stack.len == 0: stack.add(i)
+        if ord(i) < 65 and ord(i) > 91 or
+             ord(i) < 97 and ord(i) > 122: continue
+        elif stack.len == 0: stack.add(i)
         elif ch != '\0' and i == chr(ord(ch) - 32) or i == ch: continue
-        elif stack[stack.high] == chr(ord(i) + 32) or
-             stack[stack.high] == chr(ord(i) - 32):
+        elif abs(ord(stack[stack.high]) - ord(i)) == 32:
             stack.del(stack.high)
         else: stack.add(i)
-    return stack.len
+    return stack.high
 
 proc part_one(input: string): int =
     return helper(input, '\0')
@@ -28,6 +28,6 @@ proc part_two(input: string): int =
         if ^i < smallest: smallest = ^i
     return smallest
 
-let input = readFile("input.txt").strip
+let input = stdin.readAll
 echo part_one(input)
 echo part_two(input)
